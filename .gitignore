@@ -1,4 +1,6 @@
 
+resized_train
+resized_train_masks
 __pycache__/
 
 # Byte-compiled / optimized / DLL files

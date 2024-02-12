@@ -24,7 +24,7 @@ class DoubleConv(nn.Module):
 
 class Unet(nn.Module):
     def __init__(
-            self, in_channels=3, out_channels=1, features=[64, 128, 256, 512],
+            self, in_channels=3, out_channels=7, features=[64, 128, 256, 512],
     ):
         super(Unet, self).__init__()
         self.ups = nn.ModuleList()
