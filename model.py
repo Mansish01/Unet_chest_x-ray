@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision.transforms.functional as TF
-
+import torch.nn.functional as F
 
 class DoubleConv(nn.Module):
     def __init__(self, in_channles, out_channles):
@@ -22,9 +22,9 @@ class DoubleConv(nn.Module):
         return self.conv(x)
     
 
-class Unet(nn.Module):
+class UNET(nn.Module):
     def __init__(
-            self, in_channels=3, out_channels=7, features=[64, 128, 256, 512],
+            self, in_channels=3, out_channels=8, features=[64, 128, 256, 512],
     ):
         super(Unet, self).__init__()
         self.ups = nn.ModuleList()
@@ -72,12 +72,12 @@ class Unet(nn.Module):
             concatenate = torch.cat((skip_connection, x), dim=1)
             x= self.ups[index+1](concatenate)
         
-        return self.final_conv(x)
+        return F.softmax(self.final_conv(x), dim=1)
 
 
 def test():
-    x= torch.randn((3, 1, 512, 512))
-    model = Unet(in_channels=1, out_channels=1)
+    x= torch.randn((3, 3, 512, 512))
+    model = UNET(in_channels=3, out_channels=8)
     preds = model(x)
     print(preds.shape)
     print(x.shape)

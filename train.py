@@ -5,6 +5,7 @@ from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
 from model import UNET
+
 from utils import (
     load_checkpoint,
     save_checkpoint,
@@ -14,17 +15,19 @@ from utils import (
 )
 
 # Hyperparameters etc.
-LEARNING_RATE = 1e-4
+LEARNING_RATE = 0.0001
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 16
-NUM_EPOCHS = 3
+NUM_EPOCHS = 1
 NUM_WORKERS = 2
-IMAGE_HEIGHT = 160  # 1280 originally
-IMAGE_WIDTH = 240  # 1918 originally
+IMAGE_HEIGHT = 512
+IMAGE_WIDTH = 512
 PIN_MEMORY = True
 LOAD_MODEL = False
-TRAIN_IMG_DIR = "data/train_images/"
-TRAIN_MASK_DIR = "data/train_masks/"
+
+TRAIN_IMG_DIR = r"resized_train"
+TRAIN_MASK_DIR = r"resized_train_masks"
+
 VAL_IMG_DIR = "data/val_images/"
 VAL_MASK_DIR = "data/val_masks/"
 
@@ -54,9 +57,9 @@ def main():
     train_transform = A.Compose(
         [
             A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
-            A.Rotate(limit=35, p=1.0),
+            A.Rotate(limit=10, p=1.0),
             A.HorizontalFlip(p=0.5),
-            A.VerticalFlip(p=0.1),
+            # A.VerticalFlip(p=0.1),
             A.Normalize(
                 mean=[0.0, 0.0, 0.0],
                 std=[1.0, 1.0, 1.0],
@@ -78,8 +81,8 @@ def main():
         ],
     )
 
-    model = UNET(in_channels=3, out_channels=1).to(DEVICE)
-    loss_fn = nn.BCEWithLogitsLoss()
+    model = UNET(in_channels=3, out_channels=8).to(DEVICE)
+    loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     train_loader, val_loader = get_loaders(
@@ -98,7 +101,8 @@ def main():
         load_checkpoint(torch.load("my_checkpoint.pth.tar"), model)
 
 
-    check_accuracy(val_loader, model, device=DEVICE)
+    # check_accuracy(val_loader, model, device=DEVICE) train vayesake paxi
+
     scaler = torch.cuda.amp.GradScaler()
 
     for epoch in range(NUM_EPOCHS):
